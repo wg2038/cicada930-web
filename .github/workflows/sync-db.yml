@@ -1,0 +1,58 @@
+name: Sync Upstream Database
+
+on:
+  repository_dispatch:
+    types: [upstream_db_updated]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download upstream opusone.db
+        run: |
+          mkdir -p tmp
+          curl -sSL "https://raw.githubusercontent.com/wg2038/cicada930/main/app/src/main/assets/opusone.db" -o tmp/opusone.db
+          
+          # Verify download is non-empty
+          if [ ! -s tmp/opusone.db ]; then
+            echo "Error: Downloaded database file is empty"
+            exit 1
+          fi
+
+      - name: Compare checksums and update
+        id: check_diff
+        run: |
+          OLD_HASH=$(sha256sum public/opusone.db 2>/dev/null | awk '{print $1}' || echo "none")
+          NEW_HASH=$(sha256sum tmp/opusone.db | awk '{print $1}')
+          
+          echo "Current DB SHA256:  $OLD_HASH"
+          echo "Upstream DB SHA256: $NEW_HASH"
+          
+          if [ "$OLD_HASH" != "$NEW_HASH" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            mv tmp/opusone.db public/opusone.db
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No database changes detected."
+          fi
+          rm -rf tmp
+
+      - name: Commit and push changes
+        if: steps.check_diff.outputs.has_changes == 'true'
+        run: |
+          git config user.name "wg2038"
+          git config user.email "wg2038@users.noreply.github.com"
+          git add public/opusone.db
+          git commit -m "chore(db): sync opusone.db from upstream cicada930 [skip ci]"
+          git push
