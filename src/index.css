@@ -5,19 +5,114 @@
     --font-classical: "Noto Serif SC", "Source Han Serif SC", "Source Han Serif CN", "Songti SC", "SimSun", "STSong", serif;
   }
 
+  /* Default: PARCHMENT Light (澄心宣白·朱砂微红) */
+  :root,
+  [data-theme="parchment"] {
+    --theme-bg: #F2ECE1;
+    --theme-surface: #F2ECE1;
+    --theme-card: #FBF6EB;
+    --theme-card-hover: #F5EFE3;
+    --theme-text: #26231E;
+    --theme-text-muted: #5A544A;
+    --theme-border: #D4CBB9;
+    --theme-primary: #8E3424;
+    --theme-primary-container: #EADBBE;
+    --theme-on-primary-container: #483010;
+    --theme-header-bg: rgba(242, 236, 225, 0.92);
+  }
+
+  /* PARCHMENT Dark (玄青夜读) */
+  :root.dark,
+  [data-theme="parchment"].dark {
+    --theme-bg: #14120F;
+    --theme-surface: #14120F;
+    --theme-card: #1D1B19;
+    --theme-card-hover: #262320;
+    --theme-text: #E4E0D5;
+    --theme-text-muted: #C4BCA9;
+    --theme-border: #413C36;
+    --theme-primary: #F2B39E;
+    --theme-primary-container: #6E2F1F;
+    --theme-on-primary-container: #FFDAD0;
+    --theme-header-bg: rgba(20, 18, 15, 0.92);
+  }
+
+  /* INDIGO Light (磁青素月·霁蓝黛墨) */
+  [data-theme="indigo"] {
+    --theme-bg: #ECEFF3;
+    --theme-surface: #ECEFF3;
+    --theme-card: #F5F8FC;
+    --theme-card-hover: #EBF0F7;
+    --theme-text: #1E232B;
+    --theme-text-muted: #4C5562;
+    --theme-border: #CAD2DC;
+    --theme-primary: #1F4675;
+    --theme-primary-container: #D8E3F0;
+    --theme-on-primary-container: #09203F;
+    --theme-header-bg: rgba(236, 239, 243, 0.92);
+  }
+
+  /* INDIGO Dark (星夜黛蓝) */
+  [data-theme="indigo"].dark {
+    --theme-bg: #0E131A;
+    --theme-surface: #0E131A;
+    --theme-card: #141A23;
+    --theme-card-hover: #1B232E;
+    --theme-text: #E2E8F0;
+    --theme-text-muted: #C0CCD9;
+    --theme-border: #3E4A5A;
+    --theme-primary: #A3C5F7;
+    --theme-primary-container: #1D3B63;
+    --theme-on-primary-container: #DCE5F2;
+    --theme-header-bg: rgba(14, 19, 26, 0.92);
+  }
+
+  /* BAMBOO Light (天青竹月·苍翠竹青) */
+  [data-theme="bamboo"] {
+    --theme-bg: #E9EFE7;
+    --theme-surface: #E9EFE7;
+    --theme-card: #F3F8F0;
+    --theme-card-hover: #E8F0E5;
+    --theme-text: #1F2620;
+    --theme-text-muted: #4C554E;
+    --theme-border: #C5CFC2;
+    --theme-primary: #26563F;
+    --theme-primary-container: #CCE2D1;
+    --theme-on-primary-container: #0F3222;
+    --theme-header-bg: rgba(233, 239, 231, 0.92);
+  }
+
+  /* BAMBOO Dark (墨绿竹金) */
+  [data-theme="bamboo"].dark {
+    --theme-bg: #171A14;
+    --theme-surface: #171A14;
+    --theme-card: #1F221C;
+    --theme-card-hover: #272B23;
+    --theme-text: #E2E3D6;
+    --theme-text-muted: #C3C8B4;
+    --theme-border: #43483C;
+    --theme-primary: #D9BC8A;
+    --theme-primary-container: #544426;
+    --theme-on-primary-container: #F1E1BE;
+    --theme-header-bg: rgba(23, 26, 20, 0.92);
+  }
+
   body {
     font-family: var(--font-classical);
     margin: 0;
     padding: 0;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
 /* Custom Scrollbar for classical look */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -25,10 +120,15 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(180, 160, 140, 0.4);
-  border-radius: 3px;
+  background: var(--theme-border);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(180, 160, 140, 0.7);
+  background: var(--theme-primary);
+}
+
+/* Safe area support for mobile devices */
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
 }

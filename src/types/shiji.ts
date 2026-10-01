@@ -113,12 +113,14 @@ export interface SearchResultItem {
   section_pn?: string
 }
 
-export type ThemeMode = 'parchment' | 'light' | 'dark'
+export type ThemeStyle = 'parchment' | 'indigo' | 'bamboo'
+export type DarkMode = 'light' | 'dark' | 'system'
 
 export interface ReaderSettings {
-  theme: ThemeMode
-  fontSize: number // 16 to 24
-  lineHeight: number // 1.6 to 2.2
+  themeStyle: ThemeStyle
+  darkMode: DarkMode
+  fontSize: number // 14 to 26
+  lineHeight: number // 1.6 to 2.4
   showJijie: boolean
   showSuoyin: boolean
   showZhengyi: boolean

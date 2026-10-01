@@ -29,6 +29,7 @@ interface ReaderViewProps {
   targetPn?: string | null
   settings: ReaderSettings
   onSelectSection: (section: Section) => void
+  onOpenNotesSheet?: (section: Section) => void
   onSelectEntity: (label: string, prefix: string) => void
   onPrevChapter: () => void
   onNextChapter: () => void
@@ -46,6 +47,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   targetPn,
   settings,
   onSelectSection,
+  onOpenNotesSheet,
   onSelectEntity,
   onPrevChapter,
   onNextChapter,
@@ -74,16 +76,16 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   }, [notes])
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8 space-y-8 select-text">
+    <div className="max-w-3xl mx-auto px-3 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 select-text">
       {/* Chapter Title & Header */}
-      <div className="text-center space-y-3 pb-6 border-b border-stone-200/80 dark:border-stone-800">
-        <div className="inline-block px-3 py-1 text-xs font-semibold tracking-widest rounded-full bg-[#9C3826]/10 text-[#9C3826] dark:bg-red-950/60 dark:text-red-300 border border-[#9C3826]/20">
+      <div className="text-center space-y-2.5 sm:space-y-3 pb-5 sm:pb-6 border-b border-[var(--theme-border)]/80">
+        <div className="inline-block px-3 py-1 text-xs font-bold tracking-widest rounded-full bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] border border-[var(--theme-border)]">
           {chapter.category} · 卷第 {chapter.id}
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100 font-serif">
+        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--theme-text)] font-serif">
           {chapter.title}
         </h1>
-        <div className="flex items-center justify-center gap-4 text-xs text-stone-500 dark:text-stone-400 font-mono">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 text-xs text-[var(--theme-text-muted)] font-mono">
           <span>{chapter.word_count.toLocaleString()} 字</span>
           <span>·</span>
           <span>{chapter.section_count} 段落</span>
@@ -91,8 +93,8 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
           <span>{notes.length} 条三家注</span>
         </div>
         {chapter.summary && (
-          <p className="max-w-xl mx-auto text-xs sm:text-sm text-stone-600 dark:text-stone-400 italic bg-stone-100/60 dark:bg-stone-800/40 p-3 rounded-lg border border-stone-200/50 dark:border-stone-800 text-left leading-relaxed">
-            <span className="font-semibold not-italic text-stone-700 dark:text-stone-300">卷前提要：</span>
+          <p className="max-w-xl mx-auto text-xs sm:text-sm text-[var(--theme-text-muted)] italic bg-[var(--theme-card)] p-3.5 rounded-xl border border-[var(--theme-border)] text-left leading-relaxed">
+            <span className="font-semibold not-italic text-[var(--theme-text)]">卷前提要：</span>
             {chapter.summary}
           </p>
         )}
@@ -100,7 +102,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
       {/* Sections List */}
       <div
-        className="space-y-6"
+        className="space-y-5 sm:space-y-6"
         style={{
           fontSize: `${settings.fontSize}px`,
           lineHeight: settings.lineHeight,
@@ -120,12 +122,12 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 ref={(el) => {
                   if (el) sectionRefs.current.set(section.pn_index, el)
                 }}
-                className={`pt-4 font-serif font-bold text-stone-900 dark:text-stone-100 ${
+                className={`pt-3 sm:pt-4 font-serif font-bold text-[var(--theme-text)] ${
                   level === 1
-                    ? 'text-2xl border-b pb-2 border-stone-300 dark:border-stone-700'
+                    ? 'text-xl sm:text-2xl border-b pb-2 border-[var(--theme-border)]'
                     : level === 2
-                    ? 'text-xl'
-                    : 'text-lg text-stone-800 dark:text-stone-200'
+                    ? 'text-lg sm:text-xl'
+                    : 'text-base sm:text-lg opacity-90'
                 }`}
               >
                 {section.heading_text || section.plain_text}
@@ -142,25 +144,35 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               onClick={() => onSelectSection(section)}
               className={`group relative rounded-xl p-3 sm:p-4 transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'bg-amber-100/50 dark:bg-amber-950/20 ring-1 ring-[#9C3826]/40 dark:ring-amber-500/40'
-                  : 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'
+                  ? 'bg-[var(--theme-card)] ring-1 sm:ring-2 ring-[var(--theme-primary)] shadow-sm'
+                  : 'hover:bg-[var(--theme-card)]/50'
               }`}
             >
-              {/* Paragraph number badge */}
-              <div className="flex items-center justify-between text-xs text-stone-400 mb-1 select-none font-mono">
-                <span className="opacity-60 group-hover:opacity-100 transition-opacity">
+              {/* Paragraph number badge & Notes button */}
+              <div className="flex items-center justify-between text-xs text-[var(--theme-text-muted)] mb-1.5 select-none font-mono">
+                <span className="opacity-70 group-hover:opacity-100 transition-opacity font-bold">
                   § {section.pn_index}
                 </span>
+
+                {/* Mobile / Tablet Quick Notes Pill */}
                 {hasNotes && (
-                  <span className="flex items-center gap-1 text-[11px] font-sans px-1.5 py-0.5 rounded bg-stone-200/70 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
-                    <BookMarked className="w-3 h-3 text-[#9C3826]" />
-                    {sectionNotes.length}条注疏
-                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onSelectSection(section)
+                      onOpenNotesSheet?.(section)
+                    }}
+                    className="flex items-center gap-1 text-[11px] font-sans px-2 py-0.8 rounded-full bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-semibold hover:opacity-80 transition-all shadow-2xs"
+                    title="在底部抽屉或侧边栏查看本段三家注疏"
+                  >
+                    <BookMarked className="w-3 h-3 text-[var(--theme-primary)]" />
+                    <span>{sectionNotes.length} 条注疏</span>
+                  </button>
                 )}
               </div>
 
               {/* Classical Text with Entity Tags */}
-              <div className="font-serif tracking-normal text-stone-900 dark:text-stone-100 leading-relaxed text-justify">
+              <div className="font-serif tracking-normal text-[var(--theme-text)] leading-relaxed text-justify">
                 <TaggedText
                   content={section.tagged_content || section.plain_text || ''}
                   showEntities={settings.showEntities}
@@ -170,9 +182,9 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
               {/* Vernacular Translation if enabled */}
               {settings.showTranslation && section.translation && (
-                <div className="mt-3 p-3 rounded-lg border-l-2 border-[#9C3826] bg-stone-100/70 dark:bg-stone-900/60 text-stone-600 dark:text-stone-400 text-xs sm:text-sm leading-relaxed">
-                  <span className="font-semibold text-stone-700 dark:text-stone-300 block mb-1">
-                    【译文】
+                <div className="mt-2.5 sm:mt-3 p-3 rounded-lg border-l-2 border-[var(--theme-primary)] bg-[var(--theme-surface)]/80 text-[var(--theme-text-muted)] text-xs sm:text-sm leading-relaxed">
+                  <span className="font-bold text-[var(--theme-text)] block mb-1">
+                    【白话译文】
                   </span>
                   {section.translation}
                 </div>
@@ -184,12 +196,12 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
       {/* Taishigongyue (太史公曰) Section */}
       {taishigongyue && (
-        <div className="my-10 p-6 rounded-2xl border-2 border-[#9C3826]/30 bg-[#FAF7F2] dark:bg-[#1C1D22] shadow-sm relative overflow-hidden">
-          <div className="flex items-center gap-2 mb-3 text-[#9C3826] font-bold text-lg font-serif">
+        <div className="my-8 sm:my-10 p-5 sm:p-7 rounded-2xl border-2 border-[var(--theme-primary)]/40 bg-[var(--theme-card)] shadow-md relative overflow-hidden">
+          <div className="flex items-center gap-2 mb-3 text-[var(--theme-primary)] font-bold text-lg font-serif">
             <Scroll className="w-5 h-5" />
             <h3>太史公曰</h3>
           </div>
-          <div className="font-serif leading-relaxed text-stone-800 dark:text-stone-200 text-base text-justify whitespace-pre-line">
+          <div className="font-serif leading-relaxed text-[var(--theme-text)] text-sm sm:text-base text-justify whitespace-pre-line">
             {taishigongyue.plain_content || taishigongyue.content}
           </div>
         </div>
@@ -197,24 +209,24 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
       {/* Related Chengyu in this Chapter */}
       {chengyu.length > 0 && (
-        <div className="pt-6 border-t border-stone-200 dark:border-stone-800 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-stone-700 dark:text-stone-300">
-            <Sparkles className="w-4 h-4 text-[#9C3826]" />
+        <div className="pt-6 border-t border-[var(--theme-border)] space-y-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-[var(--theme-text)]">
+            <Sparkles className="w-4 h-4 text-[var(--theme-primary)]" />
             <span>本卷成语典故 ({chengyu.length})</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {chengyu.map((item) => (
               <div
                 key={item.id}
-                className="p-3 rounded-lg border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-900/30 space-y-1 text-xs"
+                className="p-3 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] space-y-1 text-xs"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-[#9C3826]">{item.word}</span>
-                  <span className="text-stone-400 font-mono">段落 {item.pn}</span>
+                  <span className="font-bold text-sm text-[var(--theme-primary)]">{item.word}</span>
+                  <span className="text-[var(--theme-text-muted)] font-mono">段落 {item.pn}</span>
                 </div>
-                {item.quote && <p className="text-stone-500 italic">“{item.quote}”</p>}
+                {item.quote && <p className="text-[var(--theme-text-muted)] italic font-serif">“{item.quote}”</p>}
                 {item.meaning && (
-                  <p className="text-stone-700 dark:text-stone-300">{item.meaning}</p>
+                  <p className="text-[var(--theme-text)]">{item.meaning}</p>
                 )}
               </div>
             ))}
@@ -224,22 +236,22 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
       {/* Related Historical Stories in this Chapter */}
       {stories.length > 0 && (
-        <div className="pt-6 border-t border-stone-200 dark:border-stone-800 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-stone-700 dark:text-stone-300">
-            <Info className="w-4 h-4 text-[#9C3826]" />
+        <div className="pt-6 border-t border-[var(--theme-border)] space-y-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-[var(--theme-text)]">
+            <Info className="w-4 h-4 text-[var(--theme-primary)]" />
             <span>本卷重大史事记 ({stories.length})</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {stories.map((story) => (
               <div
                 key={story.id}
-                className="p-3.5 rounded-lg border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-900/30 space-y-1.5 text-xs"
+                className="p-3.5 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] space-y-1.5 text-xs"
               >
-                <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100">
+                <h4 className="font-bold text-sm text-[var(--theme-text)]">
                   {story.title}
                 </h4>
                 {story.summary && (
-                  <p className="text-stone-600 dark:text-stone-400 leading-relaxed">
+                  <p className="text-[var(--theme-text-muted)] leading-relaxed">
                     {story.summary}
                   </p>
                 )}
@@ -250,24 +262,24 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
       )}
 
       {/* Chapter Bottom Navigation */}
-      <div className="pt-8 border-t border-stone-200 dark:border-stone-800 flex items-center justify-between">
+      <div className="pt-6 sm:pt-8 border-t border-[var(--theme-border)] flex items-center justify-between safe-pb">
         <button
           onClick={onPrevChapter}
           disabled={chapter.id <= 1}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-30 disabled:pointer-events-none text-xs sm:text-sm font-medium transition-all"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] hover:bg-[var(--theme-card-hover)] disabled:opacity-30 disabled:pointer-events-none text-xs sm:text-sm font-semibold transition-all"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>上一篇</span>
         </button>
 
-        <span className="text-xs text-stone-400 font-mono">
+        <span className="text-xs text-[var(--theme-text-muted)] font-mono">
           卷 {chapter.id} / {totalChapters}
         </span>
 
         <button
           onClick={onNextChapter}
           disabled={chapter.id >= totalChapters}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-30 disabled:pointer-events-none text-xs sm:text-sm font-medium transition-all"
+          className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] hover:bg-[var(--theme-card-hover)] disabled:opacity-30 disabled:pointer-events-none text-xs sm:text-sm font-semibold transition-all"
         >
           <span>下一篇</span>
           <ChevronRight className="w-4 h-4" />
