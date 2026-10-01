@@ -193,7 +193,7 @@ export const SpecialModal: React.FC<SpecialModalProps> = ({
                   </p>
                   <p>
                     <strong className="text-[var(--theme-text)]">AI 模型协同研发：</strong>
-                    本工程中海量古籍的结构化抽取、注疏上下文对齐、实体关系提取，以及大部分 Kotlin/React 代码架构，均由 <strong>Google Gemini 3.8 Flash</strong> 模型深度协作完成。
+                    本工程中海量古籍的结构化抽取、注疏上下文对齐、实体关系提取，以及大部分 React/TypeScript 前端架构，均由 <strong>Google Gemini 3.8 Flash</strong> 模型深度协作完成。
                   </p>
                 </div>
               </div>
