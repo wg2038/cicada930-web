@@ -209,22 +209,102 @@ self.onmessage = async (e: MessageEvent) => {
 
       case 'GET_ENTITY_DETAILS': {
         const { label } = payload
-        const entity = queryOne<Entity>(
-          `SELECT id, label, type, type_name_zh, aliases, description, tags, occurrences_count 
-           FROM entities 
-           WHERE label = ? OR id = ?`,
-          [label, label]
-        )
+        const cleanKey = (label || '').trim()
+
+        if (!cleanKey) {
+          self.postMessage({ id, success: true, data: { entity: null, occurrences: [] } })
+          return
+        }
+
+        // Recursive entity resolver with alias & redirect support (aligned with Android OpusOneDatabaseHelper)
+        const resolveEntity = (key: string, depth = 0): Entity | null => {
+          if (depth > 3) return null
+
+          const exactAliasPattern = `%"${key.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_')}"%`
+          const likePattern = `%${key}%`
+
+          const found = queryOne<Entity>(
+            `SELECT id, label, type, type_name_zh, aliases, description, tags, occurrences_count
+             FROM entities
+             WHERE id = ? OR label = ? OR aliases LIKE ? ESCAPE '\\' OR aliases LIKE ? ESCAPE '\\'
+             ORDER BY
+               CASE
+                 WHEN type = 'redirect' THEN 3
+                 WHEN id = ? THEN 0
+                 WHEN label = ? THEN 1
+                 ELSE 2
+               END,
+               occurrences_count DESC
+             LIMIT 1`,
+            [key, key, exactAliasPattern, likePattern, key, key]
+          )
+
+          if (found) {
+            const desc = (found.description || '').trim()
+            const isRedirect =
+              found.type === 'redirect' ||
+              desc.startsWith('REDIRECT ') ||
+              desc.startsWith('→ 参见 ')
+
+            if (isRedirect) {
+              let target = ''
+              if (desc.startsWith('REDIRECT ')) {
+                target = desc.replace('REDIRECT ', '').trim()
+              } else if (desc.startsWith('→ 参见 ')) {
+                target = desc.replace('→ 参见 ', '').trim().split(/[\s\n]/)[0]
+              }
+              if (target && target !== key) {
+                const resolved = resolveEntity(target, depth + 1)
+                if (resolved) return resolved
+              }
+            }
+
+            if (found.type !== 'redirect') {
+              return found
+            }
+          }
+
+          if (depth > 0) return null
+
+          // Fallback if entity not found in dictionary (matching Android OpusOneDatabaseHelper)
+          return {
+            id: key,
+            label: key,
+            type: 'custom',
+            type_name_zh: '考据词条',
+            aliases: '[]',
+            description: `《史记》词条考据：“${key}”收录于全书典籍索引。`,
+            tags: '[]',
+            occurrences_count: 1,
+          }
+        }
+
+        const entity = resolveEntity(cleanKey)
+        const canonicalId = entity?.id || cleanKey
 
         let occurrences: { chapter_id: number; section_pn: string; chapter_title: string }[] = []
-        if (entity) {
+        try {
           occurrences = queryAll<{ chapter_id: number; section_pn: string; chapter_title: string }>(
-            `SELECT eo.chapter_id, eo.section_pn, c.title AS chapter_title 
-             FROM entity_occurrences eo 
-             JOIN chapters c ON eo.chapter_id = c.id 
-             WHERE eo.entity_id = ? 
-             ORDER BY eo.chapter_id ASC LIMIT 20`,
-            [entity.id]
+            `SELECT eo.chapter_id, eo.section_pn, COALESCE(c.title, '卷第 ' || eo.chapter_id) AS chapter_title
+             FROM entity_occurrences eo
+             INNER JOIN sections s ON s.chapter_id = eo.chapter_id AND s.pn_index = eo.section_pn
+             LEFT JOIN chapters c ON eo.chapter_id = c.id
+             WHERE eo.entity_id = ? OR eo.entity_id = ? OR eo.entity_id IN (
+               SELECT id FROM entities WHERE label = ? OR label = ?
+             )
+             GROUP BY eo.chapter_id, eo.section_pn
+             ORDER BY eo.chapter_id ASC, MIN(s.order_in_chapter) ASC
+             LIMIT 50`,
+            [canonicalId, cleanKey, canonicalId, cleanKey]
+          )
+        } catch {
+          occurrences = queryAll<{ chapter_id: number; section_pn: string; chapter_title: string }>(
+            `SELECT eo.chapter_id, eo.section_pn, c.title AS chapter_title
+             FROM entity_occurrences eo
+             JOIN chapters c ON eo.chapter_id = c.id
+             WHERE eo.entity_id = ? OR eo.entity_id = ?
+             ORDER BY eo.chapter_id ASC LIMIT 50`,
+            [canonicalId, cleanKey]
           )
         }
 

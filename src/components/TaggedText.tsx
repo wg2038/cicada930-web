@@ -89,7 +89,7 @@ export const TaggedText: React.FC<TaggedTextProps> = ({
 
   // If entities are disabled or text has no tags, render as plain text
   if (!showEntities || !content.includes('⟪')) {
-    const plain = content.replace(/⟪[^\s]+\s+([^⟫]+)⟫/g, '$1')
+    const plain = content.replace(/⟪[^\s]+\s+([^⟫]+)⟫/g, (_, body) => body.split('|')[0].trim())
     return <span>{plain}</span>
   }
 
@@ -104,7 +104,11 @@ export const TaggedText: React.FC<TaggedTextProps> = ({
     }
 
     const prefix = match[1]
-    const label = match[2]
+    const rawBody = match[2]
+    const pipeParts = rawBody.split('|')
+    const displayText = pipeParts[0].trim()
+    const entityKey = pipeParts.length > 1 ? pipeParts[1].trim() : pipeParts[0].trim()
+
     const meta = CATEGORY_MAP[prefix] || {
       label: '概念',
       className: 'border-b border-dotted opacity-80 hover:opacity-100',
@@ -112,21 +116,21 @@ export const TaggedText: React.FC<TaggedTextProps> = ({
 
     parts.push(
       <span
-        key={`${match.index}-${label}`}
+        key={`${match.index}-${rawBody}`}
         onClick={(e) => {
           e.stopPropagation()
           const rect = e.currentTarget.getBoundingClientRect()
-          onSelectEntity?.(label, prefix, {
+          onSelectEntity?.(entityKey, prefix, {
             top: rect.top,
             bottom: rect.bottom,
             left: rect.left,
             right: rect.right,
           })
         }}
-        title={`${label} [${meta.label}] · 点击调取史实释义与全书索引`}
+        title={`${displayText}${displayText !== entityKey ? `（考释：“${entityKey}”）` : ''} [${meta.label}] · 点击调取史实释义与全书索引`}
         className={`inline cursor-pointer transition-all duration-150 rounded-xs select-none ${meta.className}`}
       >
-        {label}
+        {displayText}
       </span>
     )
 

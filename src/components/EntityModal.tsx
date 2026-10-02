@@ -87,6 +87,19 @@ export const EntityModal: React.FC<EntityModalProps> = ({
     }
   }, [anchorRect])
 
+  const parsedAliases = useMemo(() => {
+    if (!entity?.aliases) return []
+    try {
+      const arr = JSON.parse(entity.aliases)
+      if (Array.isArray(arr)) {
+        return arr.filter((a: string) => typeof a === 'string' && a.trim() && a !== entity.label)
+      }
+    } catch {
+      return entity.aliases.split(/[,，、]/).map((s) => s.trim()).filter(Boolean)
+    }
+    return []
+  }, [entity?.aliases, entity?.label])
+
   if (!label) return null
 
   // Desktop Floating Popover
@@ -100,22 +113,29 @@ export const EntityModal: React.FC<EntityModalProps> = ({
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--theme-border)] bg-[var(--theme-surface)]/70 shrink-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold font-serif tracking-wide">{label}</h3>
+            <div className="flex items-center gap-2 truncate">
+              <h3 className="text-lg font-bold font-serif tracking-wide truncate">
+                {entity?.label || label}
+              </h3>
+              {entity?.label && entity.label !== label && (
+                <span className="text-xs text-[var(--theme-text-muted)] font-sans shrink-0">
+                  （正文：“{label}”）
+                </span>
+              )}
               {entity?.type_name_zh && (
-                <span className="px-2 py-0.5 text-xs font-bold rounded-sm bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)]">
+                <span className="px-2 py-0.5 text-xs font-bold rounded-sm bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] shrink-0">
                   {entity.type_name_zh}
                 </span>
               )}
               {entity?.occurrences_count ? (
-                <span className="text-xs text-[var(--theme-text-muted)] font-mono">
+                <span className="text-xs text-[var(--theme-text-muted)] font-mono shrink-0">
                   出场 {entity.occurrences_count} 次
                 </span>
               ) : null}
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+              className="p-1 rounded-lg text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
@@ -130,14 +150,19 @@ export const EntityModal: React.FC<EntityModalProps> = ({
               </div>
             ) : (
               <>
-                <p className="leading-relaxed text-[var(--theme-text)] bg-[var(--theme-surface)]/70 p-3 rounded-xl border border-[var(--theme-border)]/60 font-serif text-justify">
-                  {entity?.description || '暂无详细历史百科释义。'}
-                </p>
+                <div className="space-y-1">
+                  <div className="text-[11px] font-bold text-[var(--theme-primary)] flex items-center gap-1">
+                    <span>典籍考据与概述</span>
+                  </div>
+                  <p className="leading-relaxed text-[var(--theme-text)] bg-[var(--theme-surface)]/70 p-3 rounded-xl border border-[var(--theme-border)]/60 font-serif text-justify whitespace-pre-line">
+                    {entity?.description || '暂无详细历史百科释义。'}
+                  </p>
+                </div>
 
-                {entity?.aliases && (
-                  <div className="text-xs text-[var(--theme-text-muted)]">
-                    <span className="font-bold text-[var(--theme-text)]">别称：</span>
-                    {entity.aliases}
+                {parsedAliases.length > 0 && (
+                  <div className="text-xs text-[var(--theme-text-muted)] flex items-baseline gap-1">
+                    <span className="font-bold text-[var(--theme-text)] shrink-0">又称：</span>
+                    <span className="leading-relaxed font-sans">{parsedAliases.join('、')}</span>
                   </div>
                 )}
 
@@ -188,22 +213,29 @@ export const EntityModal: React.FC<EntityModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--theme-border)] bg-[var(--theme-surface)]/70 shrink-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold font-serif tracking-wide">{label}</h3>
+          <div className="flex items-center gap-2 truncate">
+            <h3 className="text-lg font-bold font-serif tracking-wide truncate">
+              {entity?.label || label}
+            </h3>
+            {entity?.label && entity.label !== label && (
+              <span className="text-xs text-[var(--theme-text-muted)] font-sans shrink-0">
+                （正文：“{label}”）
+              </span>
+            )}
             {entity?.type_name_zh && (
-              <span className="px-2 py-0.5 text-xs font-bold rounded-sm bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)]">
+              <span className="px-2 py-0.5 text-xs font-bold rounded-sm bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] shrink-0">
                 {entity.type_name_zh}
               </span>
             )}
             {entity?.occurrences_count ? (
-              <span className="text-xs text-[var(--theme-text-muted)] font-mono">
+              <span className="text-xs text-[var(--theme-text-muted)] font-mono shrink-0">
                 全书 {entity.occurrences_count} 次
               </span>
             ) : null}
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+            className="p-1 rounded-lg text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -218,14 +250,19 @@ export const EntityModal: React.FC<EntityModalProps> = ({
             </div>
           ) : (
             <>
-              <p className="leading-relaxed text-[var(--theme-text)] bg-[var(--theme-surface)] p-3.5 rounded-xl border border-[var(--theme-border)] font-serif text-justify">
-                {entity?.description || '暂无详细历史百科释义。'}
-              </p>
+              <div className="space-y-1">
+                <div className="text-[11px] font-bold text-[var(--theme-primary)] flex items-center gap-1">
+                  <span>典籍考据与概述</span>
+                </div>
+                <p className="leading-relaxed text-[var(--theme-text)] bg-[var(--theme-surface)] p-3.5 rounded-xl border border-[var(--theme-border)] font-serif text-justify whitespace-pre-line">
+                  {entity?.description || '暂无详细历史百科释义。'}
+                </p>
+              </div>
 
-              {entity?.aliases && (
-                <div className="text-xs text-[var(--theme-text-muted)]">
-                  <span className="font-bold text-[var(--theme-text)]">别称/异名：</span>
-                  {entity.aliases}
+              {parsedAliases.length > 0 && (
+                <div className="text-xs text-[var(--theme-text-muted)] flex items-baseline gap-1">
+                  <span className="font-bold text-[var(--theme-text)] shrink-0">又称：</span>
+                  <span className="leading-relaxed font-sans">{parsedAliases.join('、')}</span>
                 </div>
               )}
 
