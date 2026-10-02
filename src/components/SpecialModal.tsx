@@ -63,17 +63,13 @@ export const SpecialModal: React.FC<SpecialModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-xs transition-opacity"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-4xl h-[92vh] sm:h-auto sm:max-h-[88vh] flex flex-col rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden border border-[var(--theme-border)] bg-[var(--theme-card)] text-[var(--theme-text)]"
+        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-[var(--theme-border)] bg-[var(--theme-card)] text-[var(--theme-text)]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Mobile drag handle */}
-        <div className="flex justify-center pt-2 pb-1 sm:hidden">
-          <div className="w-12 h-1 rounded-full bg-stone-400/40" />
-        </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-[var(--theme-border)] bg-[var(--theme-surface)]/60 shrink-0">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
   Menu,
   Search,
@@ -11,6 +11,7 @@ import {
   Columns,
   Square,
   Sparkles,
+  BookMarked,
 } from 'lucide-react'
 import type { Chapter, ReaderSettings, ThemeStyle, DarkMode } from '../types/shiji'
 
@@ -22,6 +23,7 @@ interface HeaderProps {
   onOpenDrawer: () => void
   onOpenSearch: () => void
   onOpenSpecialModal: () => void
+  onToggleNotesDrawer?: () => void
   onPrevChapter: () => void
   onNextChapter: () => void
   onUpdateSetting: <K extends keyof ReaderSettings>(key: K, value: ReaderSettings[K]) => void
@@ -38,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDrawer,
   onOpenSearch,
   onOpenSpecialModal,
+  onToggleNotesDrawer,
   onPrevChapter,
   onNextChapter,
   onUpdateSetting,
@@ -130,6 +133,18 @@ export const Header: React.FC<HeaderProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-[var(--theme-primary)]" />
             <span className="hidden md:inline">集锦</span>
           </button>
+
+          {/* Notes Drawer Toggle (Web Sidebar/Drawer) */}
+          {onToggleNotesDrawer && (
+            <button
+              onClick={onToggleNotesDrawer}
+              className="flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+              title="展开或折叠三家注疏与白话译文"
+            >
+              <BookMarked className="w-3.5 h-3.5 text-[var(--theme-primary)]" />
+              <span className="hidden sm:inline">注疏</span>
+            </button>
+          )}
 
           {/* Search Trigger */}
           <button

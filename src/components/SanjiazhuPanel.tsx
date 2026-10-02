@@ -7,7 +7,6 @@ interface SanjiazhuPanelProps {
   currentSection: Section | null
   settings: ReaderSettings
   onClose?: () => void
-  isMobileModal?: boolean
 }
 
 type NoteTab = 'all' | 'jijie' | 'suoyin' | 'zhengyi'
@@ -17,7 +16,6 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
   currentSection,
   settings,
   onClose,
-  isMobileModal = false,
 }) => {
   const [activeTab, setActiveTab] = useState<NoteTab>('all')
 
@@ -41,12 +39,6 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col border-stone-300 dark:border-stone-800 lg:border-l bg-[var(--theme-card)] text-[var(--theme-text)] overflow-hidden transition-colors">
-      {/* Mobile Top Drag Bar */}
-      {isMobileModal && (
-        <div className="flex justify-center pt-2 pb-1 lg:hidden">
-          <div className="w-12 h-1 rounded-full bg-stone-300 dark:bg-stone-700" />
-        </div>
-      )}
 
       {/* Top Header */}
       <div className="px-4 py-3 border-b border-[var(--theme-border)]/70 bg-[var(--theme-surface)]/60 flex items-center justify-between gap-2 shrink-0">

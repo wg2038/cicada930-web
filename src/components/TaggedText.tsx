@@ -1,9 +1,16 @@
 import React from 'react'
 
+export interface EntityAnchorRect {
+  top: number
+  bottom: number
+  left: number
+  right: number
+}
+
 interface TaggedTextProps {
   content: string
   showEntities: boolean
-  onSelectEntity?: (label: string, prefix: string) => void
+  onSelectEntity?: (label: string, prefix: string, rect?: EntityAnchorRect) => void
 }
 
 /**
@@ -108,7 +115,13 @@ export const TaggedText: React.FC<TaggedTextProps> = ({
         key={`${match.index}-${label}`}
         onClick={(e) => {
           e.stopPropagation()
-          onSelectEntity?.(label, prefix)
+          const rect = e.currentTarget.getBoundingClientRect()
+          onSelectEntity?.(label, prefix, {
+            top: rect.top,
+            bottom: rect.bottom,
+            left: rect.left,
+            right: rect.right,
+          })
         }}
         title={`${label} [${meta.label}] · 点击调取史实释义与全书索引`}
         className={`inline cursor-pointer transition-all duration-150 rounded-xs select-none ${meta.className}`}

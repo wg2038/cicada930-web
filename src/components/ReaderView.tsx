@@ -7,7 +7,7 @@ import {
   Scroll,
   Info,
 } from 'lucide-react'
-import { TaggedText } from './TaggedText'
+import { TaggedText, type EntityAnchorRect } from './TaggedText'
 import type {
   Chapter,
   Section,
@@ -29,8 +29,8 @@ interface ReaderViewProps {
   targetPn?: string | null
   settings: ReaderSettings
   onSelectSection: (section: Section) => void
-  onOpenNotesSheet?: (section: Section) => void
-  onSelectEntity: (label: string, prefix: string) => void
+  onOpenNotesDrawer?: (section: Section) => void
+  onSelectEntity: (label: string, prefix: string, rect?: EntityAnchorRect) => void
   onPrevChapter: () => void
   onNextChapter: () => void
   totalChapters: number
@@ -47,7 +47,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   targetPn,
   settings,
   onSelectSection,
-  onOpenNotesSheet,
+  onOpenNotesDrawer,
   onSelectEntity,
   onPrevChapter,
   onNextChapter,
@@ -160,10 +160,10 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                     onClick={(e) => {
                       e.stopPropagation()
                       onSelectSection(section)
-                      onOpenNotesSheet?.(section)
+                      onOpenNotesDrawer?.(section)
                     }}
                     className="flex items-center gap-1 text-[11px] font-sans px-2 py-0.8 rounded-full bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-semibold hover:opacity-80 transition-all shadow-2xs"
-                    title="在底部抽屉或侧边栏查看本段三家注疏"
+                    title="在侧边栏或抽屉中查看本段三家注疏"
                   >
                     <BookMarked className="w-3 h-3 text-[var(--theme-primary)]" />
                     <span>{sectionNotes.length} 条注疏</span>

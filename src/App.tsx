@@ -9,7 +9,8 @@ import { SearchModal } from './components/SearchModal'
 import { EntityModal } from './components/EntityModal'
 import { SpecialModal } from './components/SpecialModal'
 import type { Chapter, Section, SearchResultItem } from './types/shiji'
-import { Loader2, Scroll, BookMarked } from 'lucide-react'
+import type { EntityAnchorRect } from './components/TaggedText'
+import { Loader2, Scroll } from 'lucide-react'
 
 export function App() {
   const {
@@ -39,12 +40,13 @@ export function App() {
   const [activeSection, setActiveSection] = useState<Section | null>(null)
   const [targetPn, setTargetPn] = useState<string | null>(null)
 
-  // Dialogs & Modals
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  // Dialogs, Popovers & Drawers
+  const [chapterDrawerOpen, setChapterDrawerOpen] = useState(false)
+  const [notesDrawerOpen, setNotesDrawerOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [specialOpen, setSpecialOpen] = useState(false)
-  const [mobileNotesOpen, setMobileNotesOpen] = useState(false)
   const [selectedEntityLabel, setSelectedEntityLabel] = useState<string | null>(null)
+  const [selectedEntityAnchorRect, setSelectedEntityAnchorRect] = useState<EntityAnchorRect | null>(null)
 
   // Keyboard shortcut Ctrl+K / Cmd+K for search
   useEffect(() => {
@@ -126,16 +128,11 @@ export function App() {
   const handleSelectSearchResult = (item: SearchResultItem) => {
     if (item.type === 'entity') {
       setSelectedEntityLabel(item.title)
+      setSelectedEntityAnchorRect(null)
     } else if (item.chapter_id) {
       loadChapter(item.chapter_id, item.section_pn)
     }
   }
-
-  // Active section notes count for mobile floating indicator
-  const activeSectionNotesCount =
-    chapterData && activeSection
-      ? chapterData.notes.filter((n) => n.sentence_id === activeSection.pn_index).length
-      : 0
 
   if (!dbReady) {
     return (
@@ -187,9 +184,10 @@ export function App() {
         totalChapters={chapters.length}
         settings={settings}
         isDark={isDark}
-        onOpenDrawer={() => setDrawerOpen(true)}
+        onOpenDrawer={() => setChapterDrawerOpen(true)}
         onOpenSearch={() => setSearchOpen(true)}
         onOpenSpecialModal={() => setSpecialOpen(true)}
+        onToggleNotesDrawer={() => setNotesDrawerOpen(!notesDrawerOpen)}
         onPrevChapter={handlePrevChapter}
         onNextChapter={handleNextChapter}
         onUpdateSetting={updateSetting}
@@ -219,11 +217,18 @@ export function App() {
               targetPn={targetPn}
               settings={settings}
               onSelectSection={(sec) => setActiveSection(sec)}
-              onOpenNotesSheet={(sec) => {
+              onOpenNotesDrawer={(sec) => {
                 setActiveSection(sec)
-                setMobileNotesOpen(true)
+                // If dualPane is active and on desktop, section is already focused
+                // Otherwise open the notes drawer
+                if (!settings.dualPane || (typeof window !== 'undefined' && window.innerWidth < 1024)) {
+                  setNotesDrawerOpen(true)
+                }
               }}
-              onSelectEntity={(label) => setSelectedEntityLabel(label)}
+              onSelectEntity={(label, _prefix, rect) => {
+                setSelectedEntityLabel(label)
+                setSelectedEntityAnchorRect(rect || null)
+              }}
               onPrevChapter={handlePrevChapter}
               onNextChapter={handleNextChapter}
               totalChapters={chapters.length}
@@ -241,63 +246,56 @@ export function App() {
             />
           </aside>
         )}
-
-        {/* Mobile Floating Notes Action Button */}
-        {chapterData && activeSectionNotesCount > 0 && !mobileNotesOpen && (
-          <div className="lg:hidden fixed bottom-5 right-4 z-30">
-            <button
-              onClick={() => setMobileNotesOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full shadow-xl bg-[var(--theme-primary)] text-white font-bold text-xs hover:opacity-90 active:scale-95 transition-all"
-            >
-              <BookMarked className="w-4 h-4" />
-              <span>三家注 ({activeSectionNotesCount})</span>
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Mobile Sanjiazhu Bottom Sheet */}
-      {mobileNotesOpen && chapterData && (
+      {/* Web Off-canvas Notes Drawer (Slides in from the right when toggled or on mobile) */}
+      {notesDrawerOpen && chapterData && (
         <div
-          className="lg:hidden fixed inset-0 z-50 flex items-end bg-black/60 backdrop-blur-xs transition-opacity"
-          onClick={() => setMobileNotesOpen(false)}
+          className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-2xs transition-opacity"
+          onClick={() => setNotesDrawerOpen(false)}
         >
           <div
-            className="w-full max-h-[82vh] h-[82vh] rounded-t-2xl overflow-hidden shadow-2xl bg-[var(--theme-card)] text-[var(--theme-text)] border-t border-[var(--theme-border)]"
+            className="w-full max-w-sm sm:max-w-md h-full flex flex-col shadow-2xl bg-[var(--theme-card)] text-[var(--theme-text)] border-l border-[var(--theme-border)]"
             onClick={(e) => e.stopPropagation()}
           >
             <SanjiazhuPanel
               notes={chapterData.notes}
               currentSection={activeSection}
               settings={settings}
-              onClose={() => setMobileNotesOpen(false)}
-              isMobileModal={true}
+              onClose={() => setNotesDrawerOpen(false)}
             />
           </div>
         </div>
       )}
 
-      {/* Modals & Drawers */}
+      {/* Left Off-canvas Chapter Drawer */}
       <ChapterDrawer
-        isOpen={drawerOpen}
+        isOpen={chapterDrawerOpen}
         chapters={chapters}
         currentChapterId={currentChapterId}
         onSelectChapter={(id) => loadChapter(id)}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => setChapterDrawerOpen(false)}
       />
 
+      {/* Instant Search Modal (Web Spotlight) */}
       <SearchModal
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectResult={handleSelectSearchResult}
       />
 
+      {/* Entity Web Popover / Card (Anchored to clicked word on desktop, clean web dialog on mobile) */}
       <EntityModal
         label={selectedEntityLabel}
-        onClose={() => setSelectedEntityLabel(null)}
+        anchorRect={selectedEntityAnchorRect}
+        onClose={() => {
+          setSelectedEntityLabel(null)
+          setSelectedEntityAnchorRect(null)
+        }}
         onSelectChapter={(chapId, pn) => loadChapter(chapId, pn)}
       />
 
+      {/* Special Topics Modal (Clean Web Modal) */}
       <SpecialModal
         isOpen={specialOpen}
         onClose={() => setSpecialOpen(false)}
