@@ -12,6 +12,7 @@ import {
   Square,
   Sparkles,
   BookMarked,
+  Languages,
 } from 'lucide-react'
 import type { Chapter, ReaderSettings, ThemeStyle, DarkMode } from '../types/shiji'
 
@@ -145,6 +146,20 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden sm:inline">注疏</span>
             </button>
           )}
+
+          {/* Quick Translation Toggle */}
+          <button
+            onClick={() => onUpdateSetting('showTranslation', !settings.showTranslation)}
+            className={`flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              settings.showTranslation
+                ? 'bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-bold shadow-2xs'
+                : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40'
+            }`}
+            title={settings.showTranslation ? '点击隐藏段落白话译文' : '点击开启段落白话译文'}
+          >
+            <Languages className="w-3.5 h-3.5 text-[var(--theme-primary)]" />
+            <span className="hidden sm:inline">译文</span>
+          </button>
 
           {/* Search Trigger */}
           <button

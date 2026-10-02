@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BookMarked, Filter, Languages, Sparkles, X } from 'lucide-react'
+import { BookMarked, ChevronDown, Filter, Languages, Sparkles, X } from 'lucide-react'
 import type { SanjiazhuNote, Section, ReaderSettings } from '../types/shiji'
 
 interface SanjiazhuPanelProps {
@@ -114,16 +114,22 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
       {/* Body List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs sm:text-sm leading-relaxed safe-pb">
         {/* Vernacular Translation if present */}
-        {currentSection?.translation && (
-          <div className="p-3 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 text-[var(--theme-text)]">
-            <div className="flex items-center gap-1.5 font-bold text-xs mb-1 text-[var(--theme-primary)]">
-              <Languages className="w-3.5 h-3.5" />
-              现代白话文直译
+        {currentSection?.translation?.trim() && (
+          <details
+            open
+            className="group rounded-xl border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 text-[var(--theme-text)] overflow-hidden transition-all shadow-2xs"
+          >
+            <summary className="px-3.5 py-2.5 flex items-center justify-between cursor-pointer font-bold text-xs text-[var(--theme-primary)] bg-[var(--theme-primary-container)]/20 hover:bg-[var(--theme-primary-container)]/30 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+              <div className="flex items-center gap-1.5">
+                <Languages className="w-3.5 h-3.5" />
+                <span>现代白话文直译</span>
+              </div>
+              <ChevronDown className="w-3.5 h-3.5 transition-transform duration-200 group-open:rotate-180 opacity-70" />
+            </summary>
+            <div className="p-3 text-xs leading-relaxed opacity-90 font-sans whitespace-pre-line text-justify border-t border-[var(--theme-border)]/50">
+              {currentSection.translation.trim()}
             </div>
-            <p className="text-xs leading-relaxed opacity-90 font-sans">
-              {currentSection.translation}
-            </p>
-          </div>
+          </details>
         )}
 
         {/* Notes */}
@@ -146,7 +152,7 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
                   <div className="inline-block px-1.5 py-0.5 text-[11px] font-bold rounded-sm bg-[#1B6E2E]/10 dark:bg-[#7EE787]/15 text-[#1B6E2E] dark:text-[#7EE787]">
                     【集解】裴駰
                   </div>
-                  <p className="text-xs text-[var(--theme-text)] font-serif pl-1 leading-relaxed">
+                  <p className="text-xs text-[var(--theme-text)] font-serif pl-1 leading-relaxed whitespace-pre-line">
                     {note.jijie}
                   </p>
                 </div>
@@ -158,7 +164,7 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
                   <div className="inline-block px-1.5 py-0.5 text-[11px] font-bold rounded-sm bg-[#9C3D96]/10 dark:bg-[#F0A0E8]/15 text-[#9C3D96] dark:text-[#F0A0E8]">
                     【索隐】司马贞
                   </div>
-                  <p className="text-xs text-[var(--theme-text)] font-serif pl-1 leading-relaxed">
+                  <p className="text-xs text-[var(--theme-text)] font-serif pl-1 leading-relaxed whitespace-pre-line">
                     {note.suoyin}
                   </p>
                 </div>
@@ -170,7 +176,7 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
                   <div className="inline-block px-1.5 py-0.5 text-[11px] font-bold rounded-sm bg-[#8B4513]/10 dark:bg-[#E5A876]/15 text-[#8B4513] dark:text-[#E5A876]">
                     【正义】张守节
                   </div>
-                  <p className="text-xs text-[var(--theme-text)] font-serif pl-1 leading-relaxed">
+                  <p className="text-xs text-[var(--theme-text)] font-serif pl-1 leading-relaxed whitespace-pre-line">
                     {note.zhengyi}
                   </p>
                 </div>

@@ -172,7 +172,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               </div>
 
               {/* Classical Text with Entity Tags */}
-              <div className="font-serif tracking-normal text-[var(--theme-text)] leading-relaxed text-justify">
+              <div className="font-serif tracking-normal text-[var(--theme-text)] leading-relaxed text-justify whitespace-pre-line">
                 <TaggedText
                   content={section.tagged_content || section.plain_text || ''}
                   showEntities={settings.showEntities}
@@ -181,12 +181,12 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
               </div>
 
               {/* Vernacular Translation if enabled */}
-              {settings.showTranslation && section.translation && (
-                <div className="mt-2.5 sm:mt-3 p-3 rounded-lg border-l-2 border-[var(--theme-primary)] bg-[var(--theme-surface)]/80 text-[var(--theme-text-muted)] text-xs sm:text-sm leading-relaxed">
-                  <span className="font-bold text-[var(--theme-text)] block mb-1">
-                    【白话译文】
+              {settings.showTranslation && section.translation?.trim() && (
+                <div className="mt-2.5 sm:mt-3 pl-3.5 sm:pl-4 pr-3 py-2 rounded-r-lg border-l-2 border-[var(--theme-primary)]/50 bg-[var(--theme-surface)]/60 text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors font-sans text-[0.88em] leading-[1.75] text-justify whitespace-pre-line select-text">
+                  <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] mr-2 select-none align-middle font-mono">
+                    译
                   </span>
-                  {section.translation}
+                  {section.translation.trim()}
                 </div>
               )}
             </div>
