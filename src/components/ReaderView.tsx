@@ -76,7 +76,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
   }, [notes])
 
   return (
-    <div className="max-w-3xl mx-auto px-3 sm:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 select-text">
+    <div className="w-full px-2 sm:px-6 py-4 sm:py-6 space-y-6 select-text">
       {/* Chapter Title & Header */}
       <div className="text-center space-y-2.5 sm:space-y-3 pb-5 sm:pb-6 border-b border-[var(--theme-border)]/80">
         <div className="inline-block px-3 py-1 text-xs font-bold tracking-widest rounded-full bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] border border-[var(--theme-border)]">
@@ -102,7 +102,7 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
       {/* Sections List */}
       <div
-        className="space-y-5 sm:space-y-6"
+        className="space-y-4 sm:space-y-5"
         style={{
           fontSize: `${settings.fontSize}px`,
           lineHeight: settings.lineHeight,
@@ -142,19 +142,31 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                 if (el) sectionRefs.current.set(section.pn_index, el)
               }}
               onClick={() => onSelectSection(section)}
-              className={`group relative rounded-xl p-3 sm:p-4 transition-all duration-200 cursor-pointer ${
+              className={`group relative rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 transition-all duration-200 cursor-pointer ${
                 isActive
-                  ? 'bg-[var(--theme-card)] ring-1 sm:ring-2 ring-[var(--theme-primary)] shadow-sm'
-                  : 'hover:bg-[var(--theme-card)]/50'
+                  ? 'bg-[var(--theme-surface)]/90 ring-1 ring-[var(--theme-primary)]/40 shadow-xs'
+                  : 'hover:bg-[var(--theme-surface)]/40'
               }`}
             >
-              {/* Paragraph number badge & Notes button */}
-              <div className="flex items-center justify-between text-xs text-[var(--theme-text-muted)] mb-1.5 select-none font-mono">
-                <span className="opacity-70 group-hover:opacity-100 transition-opacity font-bold">
-                  § {section.pn_index}
+              {/* Desktop Left-gutter Section Number (§ pn) */}
+              <span className="hidden xl:block absolute -left-10 top-3 text-[11px] font-mono text-[var(--theme-text-muted)] opacity-35 group-hover:opacity-90 transition-opacity select-none text-right w-7">
+                {section.pn_index}
+              </span>
+
+              {/* Classical Text with Entity Tags & Inline Note Badge */}
+              <div className="font-serif tracking-normal text-[var(--theme-text)] leading-relaxed text-justify whitespace-pre-line relative">
+                {/* Mobile / Tablet Paragraph Prefix Badge */}
+                <span className="xl:hidden inline-block mr-1.5 text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-[var(--theme-border)]/40 text-[var(--theme-text-muted)] select-none align-baseline">
+                  {section.pn_index}
                 </span>
 
-                {/* Mobile / Tablet Quick Notes Pill */}
+                <TaggedText
+                  content={section.tagged_content || section.plain_text || ''}
+                  showEntities={settings.showEntities}
+                  onSelectEntity={onSelectEntity}
+                />
+
+                {/* Inline Classical Notes Pill Badge */}
                 {hasNotes && (
                   <button
                     onClick={(e) => {
@@ -162,27 +174,18 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
                       onSelectSection(section)
                       onOpenNotesDrawer?.(section)
                     }}
-                    className="flex items-center gap-1 text-[11px] font-sans px-2 py-0.8 rounded-full bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-semibold hover:opacity-80 transition-all shadow-2xs"
+                    className="inline-flex items-center gap-1 text-[11px] font-sans px-2 py-0.5 ml-2 rounded-full border border-[var(--theme-primary)]/30 bg-[var(--theme-primary-container)]/40 hover:bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-medium transition-all shadow-2xs align-middle select-none active:scale-95"
                     title="在侧边栏或抽屉中查看本段三家注疏"
                   >
                     <BookMarked className="w-3 h-3 text-[var(--theme-primary)]" />
-                    <span>{sectionNotes.length} 条注疏</span>
+                    <span>注 {sectionNotes.length}</span>
                   </button>
                 )}
               </div>
 
-              {/* Classical Text with Entity Tags */}
-              <div className="font-serif tracking-normal text-[var(--theme-text)] leading-relaxed text-justify whitespace-pre-line">
-                <TaggedText
-                  content={section.tagged_content || section.plain_text || ''}
-                  showEntities={settings.showEntities}
-                  onSelectEntity={onSelectEntity}
-                />
-              </div>
-
               {/* Vernacular Translation if enabled */}
               {settings.showTranslation && section.translation?.trim() && (
-                <div className="mt-2.5 sm:mt-3 pl-3.5 sm:pl-4 pr-3 py-2 rounded-r-lg border-l-2 border-[var(--theme-primary)]/50 bg-[var(--theme-surface)]/60 text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors font-sans text-[0.88em] leading-[1.75] text-justify whitespace-pre-line select-text">
+                <div className="mt-2.5 pl-3.5 pr-3 py-2 rounded-r-lg border-l-2 border-[var(--theme-primary)]/40 bg-[var(--theme-card)]/70 text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] transition-colors font-sans text-[0.88em] leading-relaxed text-justify whitespace-pre-line select-text">
                   <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] mr-2 select-none align-middle font-mono">
                     译
                   </span>

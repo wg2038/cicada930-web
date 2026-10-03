@@ -8,6 +8,7 @@ import { ChapterDrawer } from './components/ChapterDrawer'
 import { SearchModal } from './components/SearchModal'
 import { EntityModal } from './components/EntityModal'
 import { SpecialModal } from './components/SpecialModal'
+import { MobileBottomBar } from './components/MobileBottomBar'
 import type { Chapter, Section, SearchResultItem } from './types/shiji'
 import type { EntityAnchorRect } from './components/TaggedText'
 import { Loader2, Scroll } from 'lucide-react'
@@ -43,6 +44,7 @@ export function App() {
   // Dialogs, Popovers & Drawers
   const [chapterDrawerOpen, setChapterDrawerOpen] = useState(false)
   const [notesDrawerOpen, setNotesDrawerOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [specialOpen, setSpecialOpen] = useState(false)
   const [selectedEntityLabel, setSelectedEntityLabel] = useState<string | null>(null)
@@ -184,6 +186,9 @@ export function App() {
         totalChapters={chapters.length}
         settings={settings}
         isDark={isDark}
+        isSettingsOpen={settingsOpen}
+        onToggleSettings={() => setSettingsOpen((prev) => !prev)}
+        onCloseSettings={() => setSettingsOpen(false)}
         onOpenDrawer={() => setChapterDrawerOpen(true)}
         onOpenSearch={() => setSearchOpen(true)}
         onOpenSpecialModal={() => setSpecialOpen(true)}
@@ -197,55 +202,57 @@ export function App() {
       />
 
       {/* Main Reading Canvas */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Column: Classical Text Reader */}
-        <main className="flex-1 overflow-y-auto">
-          {chapterLoading || !chapterData ? (
-            <div className="flex flex-col items-center justify-center py-32 text-[var(--theme-text-muted)]">
-              <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-primary)] mb-3" />
-              <p className="text-sm">正在展卷《{currentChapter?.title || '史记'}》...</p>
-            </div>
-          ) : (
-            <ReaderView
-              chapter={chapterData.chapter}
-              sections={chapterData.sections}
-              notes={chapterData.notes}
-              stories={chapterData.stories}
-              chengyu={chapterData.chengyu}
-              taishigongyue={chapterData.taishigongyue}
-              activeSectionPn={activeSection?.pn_index || null}
-              targetPn={targetPn}
-              settings={settings}
-              onSelectSection={(sec) => setActiveSection(sec)}
-              onOpenNotesDrawer={(sec) => {
-                setActiveSection(sec)
-                // If dualPane is active and on desktop, section is already focused
-                // Otherwise open the notes drawer
-                if (!settings.dualPane || (typeof window !== 'undefined' && window.innerWidth < 1024)) {
-                  setNotesDrawerOpen(true)
-                }
-              }}
-              onSelectEntity={(label, _prefix, rect) => {
-                setSelectedEntityLabel(label)
-                setSelectedEntityAnchorRect(rect || null)
-              }}
-              onPrevChapter={handlePrevChapter}
-              onNextChapter={handleNextChapter}
-              totalChapters={chapters.length}
-            />
-          )}
-        </main>
+      <div className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-12">
+        <div className={`flex ${settings.dualPane ? 'gap-6 xl:gap-8 items-start' : 'justify-center'}`}>
+          {/* Classical Text Reader */}
+          <main className={`w-full min-w-0 ${settings.dualPane ? 'flex-1 max-w-3xl' : 'max-w-3xl'}`}>
+            {chapterLoading || !chapterData ? (
+              <div className="flex flex-col items-center justify-center py-32 text-[var(--theme-text-muted)]">
+                <Loader2 className="w-8 h-8 animate-spin text-[var(--theme-primary)] mb-3" />
+                <p className="text-sm">正在展卷《{currentChapter?.title || '史记'}》...</p>
+              </div>
+            ) : (
+              <ReaderView
+                chapter={chapterData.chapter}
+                sections={chapterData.sections}
+                notes={chapterData.notes}
+                stories={chapterData.stories}
+                chengyu={chapterData.chengyu}
+                taishigongyue={chapterData.taishigongyue}
+                activeSectionPn={activeSection?.pn_index || null}
+                targetPn={targetPn}
+                settings={settings}
+                onSelectSection={(sec) => setActiveSection(sec)}
+                onOpenNotesDrawer={(sec) => {
+                  setActiveSection(sec)
+                  // If dualPane is active and on desktop, section is already focused
+                  // Otherwise open the notes drawer
+                  if (!settings.dualPane || (typeof window !== 'undefined' && window.innerWidth < 1024)) {
+                    setNotesDrawerOpen(true)
+                  }
+                }}
+                onSelectEntity={(label, _prefix, rect) => {
+                  setSelectedEntityLabel(label)
+                  setSelectedEntityAnchorRect(rect || null)
+                }}
+                onPrevChapter={handlePrevChapter}
+                onNextChapter={handleNextChapter}
+                totalChapters={chapters.length}
+              />
+            )}
+          </main>
 
-        {/* Right Column: Sanjiazhu Dual-Pane (Desktop) */}
-        {settings.dualPane && chapterData && (
-          <aside className="hidden lg:block w-88 xl:w-96 shrink-0 h-[calc(100vh-3.5rem)] sticky top-14">
-            <SanjiazhuPanel
-              notes={chapterData.notes}
-              currentSection={activeSection}
-              settings={settings}
-            />
-          </aside>
-        )}
+          {/* Right Column: Sanjiazhu Dual-Pane (Desktop) */}
+          {settings.dualPane && chapterData && (
+            <aside className="hidden lg:block w-88 xl:w-96 shrink-0 sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl border border-[var(--theme-border)] shadow-sm bg-[var(--theme-card)]">
+              <SanjiazhuPanel
+                notes={chapterData.notes}
+                currentSection={activeSection}
+                settings={settings}
+              />
+            </aside>
+          )}
+        </div>
       </div>
 
       {/* Web Off-canvas Notes Drawer (Slides in from the right when toggled or on mobile) */}
@@ -300,6 +307,24 @@ export function App() {
         isOpen={specialOpen}
         onClose={() => setSpecialOpen(false)}
         onSelectChapter={(chapId, pn) => loadChapter(chapId, pn)}
+      />
+
+      {/* Mobile Floating Reading Dock */}
+      <MobileBottomBar
+        currentChapter={currentChapter}
+        totalChapters={chapters.length}
+        notesCount={
+          activeSection && chapterData
+            ? chapterData.notes.filter((n) => n.sentence_id === activeSection.pn_index).length
+            : chapterData?.notes.length || 0
+        }
+        showTranslation={settings.showTranslation}
+        onOpenDrawer={() => setChapterDrawerOpen(true)}
+        onOpenNotesDrawer={() => setNotesDrawerOpen(true)}
+        onToggleTranslation={() => updateSetting('showTranslation', !settings.showTranslation)}
+        onPrevChapter={handlePrevChapter}
+        onNextChapter={handleNextChapter}
+        onOpenSettings={() => setSettingsOpen((prev) => !prev)}
       />
     </div>
   )

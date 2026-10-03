@@ -21,6 +21,9 @@ interface HeaderProps {
   totalChapters: number
   settings: ReaderSettings
   isDark: boolean
+  isSettingsOpen?: boolean
+  onToggleSettings?: () => void
+  onCloseSettings?: () => void
   onOpenDrawer: () => void
   onOpenSearch: () => void
   onOpenSpecialModal: () => void
@@ -38,6 +41,9 @@ export const Header: React.FC<HeaderProps> = ({
   totalChapters,
   settings,
   isDark,
+  isSettingsOpen,
+  onToggleSettings,
+  onCloseSettings,
   onOpenDrawer,
   onOpenSearch,
   onOpenSpecialModal,
@@ -49,7 +55,10 @@ export const Header: React.FC<HeaderProps> = ({
   onSetDarkMode,
   onToggleDarkMode,
 }) => {
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [internalShowSettings, setInternalShowSettings] = useState(false)
+  const showSettingsMenu = isSettingsOpen !== undefined ? isSettingsOpen : internalShowSettings
+  const toggleSettings = onToggleSettings || (() => setInternalShowSettings((prev) => !prev))
+  const closeSettings = onCloseSettings || (() => setInternalShowSettings(false))
 
   const THEME_OPTIONS: { id: ThemeStyle; name: string; desc: string; previewBg: string; previewAccent: string }[] = [
     {
@@ -89,9 +98,9 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-xs sm:text-sm font-bold tracking-wide hidden sm:inline">卷目</span>
           </button>
 
-          {/* Chapter Quick Switcher */}
+          {/* Chapter Quick Switcher (Desktop) */}
           {currentChapter && (
-            <div className="flex items-center gap-0.5 sm:gap-1.5">
+            <div className="hidden sm:flex items-center gap-0.5 sm:gap-1.5">
               <button
                 onClick={onPrevChapter}
                 disabled={currentChapter.id <= 1}
@@ -104,11 +113,12 @@ export const Header: React.FC<HeaderProps> = ({
               <div
                 onClick={onOpenDrawer}
                 className="cursor-pointer font-bold text-xs sm:text-base text-[var(--theme-text)] flex items-center gap-1 hover:text-[var(--theme-primary)] transition-colors px-1 py-1 rounded"
+                title="点击切换卷次"
               >
                 <span className="font-mono text-[11px] sm:text-xs px-1.5 py-0.5 rounded bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-bold">
                   {currentChapter.id}
                 </span>
-                <span className="truncate max-w-[110px] sm:max-w-xs">{currentChapter.title}</span>
+                <span className="truncate max-w-[120px] sm:max-w-xs">{currentChapter.title}</span>
               </div>
 
               <button
@@ -123,34 +133,48 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
+        {/* Mobile Center: Prominent Chapter Title */}
+        {currentChapter && (
+          <div
+            onClick={onOpenDrawer}
+            className="sm:hidden flex items-center justify-center gap-1.5 font-bold text-sm text-[var(--theme-text)] cursor-pointer truncate max-w-[180px] px-2 py-1 rounded-lg"
+            title="点击展开卷目"
+          >
+            <span className="font-mono text-[10px] px-1.5 py-0.2 rounded bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-bold shrink-0">
+              卷{currentChapter.id}
+            </span>
+            <span className="truncate font-serif">{currentChapter.title}</span>
+          </div>
+        )}
+
         {/* Right Action Icons */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          {/* Special view / Topics */}
+          {/* Special view / Topics (Desktop/Tablet only) */}
           <button
             onClick={onOpenSpecialModal}
-            className="flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+            className="hidden md:flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
             title="太史公曰、成语典故、重大战役专题"
           >
             <Sparkles className="w-3.5 h-3.5 text-[var(--theme-primary)]" />
-            <span className="hidden md:inline">集锦</span>
+            <span>集锦</span>
           </button>
 
-          {/* Notes Drawer Toggle (Web Sidebar/Drawer) */}
+          {/* Notes Drawer Toggle (Desktop/Tablet only) */}
           {onToggleNotesDrawer && (
             <button
               onClick={onToggleNotesDrawer}
-              className="flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+              className="hidden md:flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
               title="展开或折叠三家注疏与白话译文"
             >
               <BookMarked className="w-3.5 h-3.5 text-[var(--theme-primary)]" />
-              <span className="hidden sm:inline">注疏</span>
+              <span>注疏</span>
             </button>
           )}
 
-          {/* Quick Translation Toggle */}
+          {/* Quick Translation Toggle (Desktop/Tablet only) */}
           <button
             onClick={() => onUpdateSetting('showTranslation', !settings.showTranslation)}
-            className={`flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`hidden md:flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               settings.showTranslation
                 ? 'bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)] font-bold shadow-2xs'
                 : 'text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40'
@@ -158,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
             title={settings.showTranslation ? '点击隐藏段落白话译文' : '点击开启段落白话译文'}
           >
             <Languages className="w-3.5 h-3.5 text-[var(--theme-primary)]" />
-            <span className="hidden sm:inline">译文</span>
+            <span>译文</span>
           </button>
 
           {/* Search Trigger */}
@@ -187,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
-          {/* Desktop Dual/Single Layout Toggle */}
+          {/* Desktop Dual/Single Layout Toggle (Desktop only) */}
           <button
             onClick={() => onUpdateSetting('dualPane', !settings.dualPane)}
             className="hidden lg:flex p-2 rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
@@ -199,28 +223,37 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Settings Menu Button */}
           <div className="relative">
             <button
-              onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-              className="p-2 rounded-lg text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+              onClick={toggleSettings}
+              className={`p-2 rounded-lg transition-colors ${
+                showSettingsMenu
+                  ? 'bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)]'
+                  : 'text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40'
+              }`}
               title="主题皮肤与阅读排版偏好"
             >
               <Settings2 className="w-4 h-4" />
             </button>
 
-            {/* Settings Dropdown */}
+            {/* Settings Dropdown / Mobile Sheet */}
             {showSettingsMenu && (
-              <div
-                className="absolute right-0 mt-2 w-76 sm:w-84 p-4 rounded-2xl shadow-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] text-[var(--theme-text)] z-50 space-y-4"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]/70">
-                  <span className="font-bold text-sm tracking-wide">排版与主题设置</span>
-                  <button
-                    onClick={() => setShowSettingsMenu(false)}
-                    className="text-xs px-2 py-0.5 rounded bg-[var(--theme-border)]/40 text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]"
-                  >
-                    完成
-                  </button>
-                </div>
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-black/40 sm:bg-transparent backdrop-blur-2xs sm:backdrop-blur-none"
+                  onClick={closeSettings}
+                />
+                <div
+                  className="fixed inset-x-3 bottom-16 sm:bottom-auto sm:inset-x-auto sm:absolute sm:right-0 sm:mt-2 w-auto sm:w-84 max-h-[82vh] overflow-y-auto p-4 rounded-2xl shadow-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] text-[var(--theme-text)] z-50 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]/70">
+                    <span className="font-bold text-sm tracking-wide">排版与主题设置</span>
+                    <button
+                      onClick={closeSettings}
+                      className="text-xs px-2 py-0.5 rounded bg-[var(--theme-border)]/40 text-[var(--theme-text-muted)] hover:text-[var(--theme-text)]"
+                    >
+                      完成
+                    </button>
+                  </div>
 
                 {/* 1. Theme Style Selector (宣纸 / 线装 / 竹简) */}
                 <div className="space-y-1.5">
@@ -393,7 +426,8 @@ export const Header: React.FC<HeaderProps> = ({
                     />
                   </div>
                 </div>
-              </div>
+                </div>
+              </>
             )}
           </div>
 
