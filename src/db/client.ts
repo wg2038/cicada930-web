@@ -88,7 +88,10 @@ class ShijiDatabaseClient {
         }
 
         // Compute absolute URLs for db and wasm
-        const baseHref = window.location.href.split('#')[0].split('?')[0]
+        let baseHref = window.location.href.split('#')[0].split('?')[0]
+        if (!baseHref.endsWith('/')) {
+          baseHref += '/'
+        }
         const dbUrl = new URL('opusone.db', baseHref).href
         const wasmUrl = new URL('sql-wasm.wasm', baseHref).href
 

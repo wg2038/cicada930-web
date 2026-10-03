@@ -220,11 +220,11 @@ export const Header: React.FC<HeaderProps> = ({
             {settings.dualPane ? <Columns className="w-4 h-4 text-[var(--theme-primary)]" /> : <Square className="w-4 h-4" />}
           </button>
 
-          {/* Settings Menu Button */}
+          {/* Settings Menu Button (Desktop/Tablet only since Mobile Bottom Bar has it) */}
           <div className="relative">
             <button
               onClick={toggleSettings}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`hidden sm:flex p-2 rounded-lg transition-colors ${
                 showSettingsMenu
                   ? 'bg-[var(--theme-primary-container)] text-[var(--theme-on-primary-container)]'
                   : 'text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40'
@@ -242,7 +242,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={closeSettings}
                 />
                 <div
-                  className="fixed inset-x-3 bottom-16 sm:bottom-auto sm:inset-x-auto sm:absolute sm:right-0 sm:mt-2 w-auto sm:w-84 max-h-[82vh] overflow-y-auto p-4 rounded-2xl shadow-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] text-[var(--theme-text)] z-50 space-y-4 animate-in fade-in zoom-in-95 duration-150"
+                  className="fixed inset-x-3 bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-auto sm:inset-x-auto sm:absolute sm:right-0 sm:mt-2 w-auto sm:w-84 max-h-[82vh] overflow-y-auto p-4 rounded-2xl shadow-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] text-[var(--theme-text)] z-50 space-y-4 animate-in fade-in zoom-in-95 duration-150"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]/70">
@@ -436,7 +436,7 @@ export const Header: React.FC<HeaderProps> = ({
             href="https://github.com/wg2038/cicada930"
             target="_blank"
             rel="noreferrer"
-            className="p-2 rounded-lg text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
+            className="hidden sm:flex p-2 rounded-lg text-[var(--theme-text-muted)] hover:text-[var(--theme-text)] hover:bg-[var(--theme-border)]/40 transition-colors"
             title="查看 Android 与语料清洗主工程 (wg2038/cicada930)"
           >
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

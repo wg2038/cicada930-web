@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { BookMarked, ChevronDown, Filter, Languages, Sparkles, X } from 'lucide-react'
 import type { SanjiazhuNote, Section, ReaderSettings } from '../types/shiji'
 
@@ -18,6 +18,14 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<NoteTab>('all')
+  const bodyRef = useRef<HTMLDivElement>(null)
+
+  // Reset scroll to top when section or tab changes
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = 0
+    }
+  }, [currentSection?.pn_index, activeTab])
 
   // Filter notes belonging to current section
   const sectionNotes = currentSection
@@ -112,7 +120,7 @@ export const SanjiazhuPanel: React.FC<SanjiazhuPanelProps> = ({
       </div>
 
       {/* Body List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs sm:text-sm leading-relaxed safe-pb">
+      <div ref={bodyRef} className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs sm:text-sm leading-relaxed safe-pb">
         {/* Vernacular Translation if present */}
         {currentSection?.translation?.trim() && (
           <details

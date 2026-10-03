@@ -128,7 +128,7 @@ export const TaggedText: React.FC<TaggedTextProps> = ({
           })
         }}
         title={`${displayText}${displayText !== entityKey ? `（考释：“${entityKey}”）` : ''} [${meta.label}] · 点击调取史实释义与全书索引`}
-        className={`inline cursor-pointer transition-all duration-150 rounded-xs select-none ${meta.className}`}
+        className={`inline cursor-pointer transition-all duration-150 rounded-xs ${meta.className}`}
       >
         {displayText}
       </span>

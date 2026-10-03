@@ -57,11 +57,16 @@ export const ReaderView: React.FC<ReaderViewProps> = ({
 
   // Scroll to targeted section if targetPn is passed
   useEffect(() => {
-    if (targetPn && sectionRefs.current.has(targetPn)) {
-      const el = sectionRefs.current.get(targetPn)
-      el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (targetPn) {
+      const timer = setTimeout(() => {
+        if (sectionRefs.current.has(targetPn)) {
+          const el = sectionRefs.current.get(targetPn)
+          el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 60)
+      return () => clearTimeout(timer)
     }
-  }, [targetPn])
+  }, [targetPn, sections])
 
   // Map notes by sentence_id for fast lookup
   const notesBySection = React.useMemo(() => {

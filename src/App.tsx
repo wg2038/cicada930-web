@@ -99,6 +99,7 @@ export function App() {
         } else {
           setTargetPn(null)
           setActiveSection(data.sections[0] || null)
+          window.scrollTo({ top: 0, behavior: 'instant' })
         }
       } catch (err) {
         console.error('Failed to load chapter:', err)
@@ -114,6 +115,22 @@ export function App() {
       loadChapter(currentChapterId)
     }
   }, [dbReady, currentChapterId, loadChapter])
+
+  // Support browser Back/Forward navigation via URL hash
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash
+      const match = hash.match(/#chapter=(\d+)/)
+      if (match) {
+        const id = parseInt(match[1], 10)
+        if (id !== currentChapterId) {
+          loadChapter(id)
+        }
+      }
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [currentChapterId, loadChapter])
 
   const handlePrevChapter = () => {
     if (currentChapterId > 1) {

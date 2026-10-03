@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { X, Search, BookOpen, Layers } from 'lucide-react'
 import type { Chapter } from '../types/shiji'
 
@@ -21,6 +21,26 @@ export const ChapterDrawer: React.FC<ChapterDrawerProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState('全部')
   const [searchQuery, setSearchQuery] = useState('')
+  const activeItemRef = useRef<HTMLButtonElement | null>(null)
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
+  // Scroll current chapter into view on open
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        activeItemRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      }, 60)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   const filteredChapters = useMemo(() => {
     return chapters.filter((c) => {
@@ -96,6 +116,7 @@ export const ChapterDrawer: React.FC<ChapterDrawerProps> = ({
             return (
               <button
                 key={chapter.id}
+                ref={isCurrent ? activeItemRef : undefined}
                 onClick={() => {
                   onSelectChapter(chapter.id)
                   onClose()

@@ -31,6 +31,15 @@ export const SpecialModal: React.FC<SpecialModalProps> = ({
   const [warsList, setWarsList] = useState<War[]>([])
   const [taishigongyueList, setTaishigongyueList] = useState<Taishigongyue[]>([])
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   useEffect(() => {
     if (!isOpen) return
     dbClient.getStats().then(setStats).catch(console.error)
